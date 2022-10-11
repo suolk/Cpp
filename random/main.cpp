@@ -37,7 +37,16 @@ void startRandNum() {
     fclose(fp);
 }
 
+void drawBan() {
+    setfont(15, 0, "宋体");
+    xyprintf(10, 550, "请输入需排除的数据范围:            -");
+    xyprintf(432, 550, "添加黑名单");
+    setlinewidth(3);
+    rectangle(420, 540, 520, 575);
+}
+
 void start() {
+    cleardevice();
     setcolor(BLACK);
     setfont(25, 0, "黑体");
     xyprintf(710, 15, "EXIT");
@@ -48,6 +57,8 @@ void start() {
     setlinewidth(3);
     rectangle(400, 5, 450, 35);
     rectangle(700, 5, 770, 50);
+    if (flag)
+        drawBan();
 }
 
 int stringToNum(char s[]) {
@@ -69,23 +80,27 @@ void wrongInput() {
     MessageBox(getHWnd(), TEXT("输入有误"), TEXT("hint"), 0);
 }
 
-void drawBan() {
-    cleardevice();
-    setfont(25, 0, "黑体");
-    xyprintf(710, 15, "EXIT");
-    setfont(15, 0, "宋体");
-    xyprintf(10, 10, "请输入需排除的数据范围:            -");
-    xyprintf(410, 13, "完成");
-    xyprintf(480, 13, "继续输入");
-    setlinewidth(3);
-    rectangle(400, 5, 450, 35);
-    rectangle(470, 5, 550, 35);
-    rectangle(700, 5, 770, 50);
-}
-
 void Ban() {
     for (int i = Left; i <= Right; ++i)
         ban[i] = true;
+}
+
+void buttonPush(const int& x1, const int& y1, const int& x2, const int& y2) {
+    setcolor(0xB2B2B2);
+    rectangle(x1, y1, x2, y2);
+    Sleep(100);
+    setcolor(BLACK);
+    rectangle(x1, y1, x2, y2);
+}
+
+void initEdit(sys_edit& tmpEdit, const int& tx, const int& ty) {
+    tmpEdit.create();
+    tmpEdit.move(tx, ty);
+    tmpEdit.size(80, 25);
+    tmpEdit.setfont(15, 0, "");
+    tmpEdit.setmaxlen(7);
+    tmpEdit.setcolor(BLACK);
+    tmpEdit.visible(true);
 }
 
 int main() {
@@ -100,78 +115,48 @@ int main() {
     key_msg key;
     mouse_msg mouse;
     sys_edit low, high, times;
+    sys_edit banl, banr;
     char s1[15], s2[15], s3[15];
-    low.create(), high.create(), times.create();
-    low.move(180, 7), high.move(290, 7), times.move(180, 37);
-    low.size(80, 25), high.size(80, 25), times.size(80, 25);
-    low.setfont(15, 0, ""), high.setfont(15, 0, ""), times.setfont(15, 0, "");
-    low.setmaxlen(7), high.setmaxlen(7), times.setmaxlen(7);
-    low.setcolor(BLACK), high.setcolor(BLACK), times.setcolor(BLACK);
-    low.visible(true), high.visible(true), times.visible(true);
+    initEdit(low, 180, 7), initEdit(high, 290, 7), initEdit(times, 180, 37), initEdit(banl, 190, 545), initEdit(banr, 300, 545);
+    banl.visible(false), banr.visible(false);
 
     for (; is_run; delay_fps(1000)) {
         if (kbmsg()) {
             key = getkey();
             if (key.msg == key_msg_down && (key.key == 'B' || key.key == 'b')) {
-                low.settext(""), high.settext(""), times.settext("");
-                times.visible(false);
-                low.move(190, 7), high.move(297, 7);
-                drawBan();
-                flag = true;
                 flushkey();
+                drawBan();
+                banl.visible(true), banr.visible(true);
+                flag = true;
             }
         } else if (mousemsg()) {
             mouse = getmouse();
             if (mouse.is_left() && mouse.is_down()) {
                 int x = mouse.x, y = mouse.y;
                 if (x >= 400 && x <= 450 && y >= 5 && y <= 35) {
-                    setcolor(0xB2B2B2);
-                    rectangle(400, 5, 450, 35);
-                    Sleep(100);
-                    setcolor(BLACK);
-                    rectangle(400, 5, 450, 35);
+                    buttonPush(400, 5, 450, 35);
                     flushmouse();
-                    if (!flag) {  // 点击确定
-                        cleardevice();
-                        start();
-                        low.gettext(15, s1), high.gettext(15, s2), times.gettext(15, s3);
-                        Left = stringToNum(s1);
-                        Right = stringToNum(s2);
-                        tot = stringToNum(s3);
-                        if (Left == -1 || Right == -1 || tot == -1 || Left > Right) {
-                            wrongInput();
-                            low.settext(""), high.settext(""), times.settext("");
-                            continue;
-                        }
-                        startRandNum();
-                    } else {  //点击完成
-                        low.gettext(15, s1), high.gettext(15, s2);
-                        Left = stringToNum(s1), Right = stringToNum(s2);
-                        low.settext(""), high.settext("");
-                        if ((Left == -1 && Right == -1) || (Left > Right && Right != -1)) {
-                            wrongInput();
-                            continue;
-                        } else if (Left == -1)
-                            Left = Right;
-                        else if (Right == -1)
-                            Right = Left;
-                        Ban();
-                        flag = false;
-                        cleardevice();
-                        times.visible(true);
-                        low.move(180, 7), high.move(290, 7);
-                        start();
+                    start();
+                    low.gettext(15, s1), high.gettext(15, s2), times.gettext(15, s3);
+                    Left = stringToNum(s1);
+                    Right = stringToNum(s2);
+                    tot = stringToNum(s3);
+                    if (Left == -1 || Right == -1 || tot == -1 || Left > Right) {
+                        wrongInput();
+                        low.settext(""), high.settext(""), times.settext("");
+                        continue;
                     }
-                } else if (x >= 470 && x <= 550 && y >= 5 && y <= 35 && flag) {  //点击继续输入
-                    setcolor(0xB2B2B2);
-                    rectangle(470, 5, 550, 35);
-                    Sleep(100);
-                    setcolor(BLACK);
-                    rectangle(470, 5, 550, 35);
+                    startRandNum();
+                } else if (x >= 700 && x <= 770 && y >= 5 && y <= 50) {  //点击退出
+                    buttonPush(700, 5, 770, 50);
                     flushmouse();
-                    low.gettext(15, s1), high.gettext(15, s2);
+                    goto end;
+                } else if (x >= 420 && x <= 520 && y >= 540 && y <= 575 && flag) {  // 添加
+                    buttonPush(420, 540, 520, 575);
+                    flushmouse();
+                    banl.gettext(15, s1), banr.gettext(15, s2);
                     Left = stringToNum(s1), Right = stringToNum(s2);
-                    low.settext(""), high.settext("");
+                    banl.settext(""), banr.settext("");
                     if ((Left == -1 && Right == -1) || (Left > Right && Right != -1)) {
                         wrongInput();
                         continue;
@@ -180,19 +165,12 @@ int main() {
                     else if (Right == -1)
                         Right = Left;
                     Ban();
-                } else if (x >= 700 && x <= 770 && y >= 5 && y <= 50) {  //点击退出
-                    setcolor(0xB2B2B2);
-                    rectangle(700, 5, 770, 50);
-                    Sleep(100);
-                    setcolor(BLACK);
-                    rectangle(700, 5, 770, 50);
-                    flushmouse();
-                    goto end;
                 }
             }
         }
     }
     getch();
+
 end:
     low.destroy(), high.destroy(), times.destroy();
     exit(0);
