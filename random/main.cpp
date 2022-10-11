@@ -88,8 +88,6 @@ void Ban() {
         ban[i] = true;
 }
 
-// DWORD WINAPI KeyControl(LPVOID lpParameter);  //线程函数声明
-
 int main() {
     FreeConsole();
     srand(time(0));
@@ -199,6 +197,3 @@ end:
     low.destroy(), high.destroy(), times.destroy();
     exit(0);
 }
-
-// DWORD WINAPI KeyControl(LPVOID lpParameter) {
-// }
