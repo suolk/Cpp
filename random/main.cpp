@@ -5,11 +5,13 @@
 #include <ctime>
 #include <iostream>
 #include <map>
+#include <vector>
 using namespace std;
 
 map<int, bool> mp, ban;
 int Left, Right, tot;
 bool flag = false;
+vector<int> banned;
 
 int getRandNum() {
     int n, a, b;
@@ -81,8 +83,11 @@ void wrongInput() {
 }
 
 void Ban() {
-    for (int i = Left; i <= Right; ++i)
+    for (int i = Left; i <= Right; ++i) {
+        if (!ban[i])
+            banned.emplace_back(i);
         ban[i] = true;
+    }
 }
 
 void buttonPush(const int& x1, const int& y1, const int& x2, const int& y2) {
@@ -173,5 +178,9 @@ int main() {
 
 end:
     low.destroy(), high.destroy(), times.destroy();
+    FILE* fp = freopen("banned.txt", "w", stdout);
+    for (int i = 0; i < banned.size(); ++i)
+        cout << banned[i] << " ";
+    fclose(fp);
     exit(0);
 }
