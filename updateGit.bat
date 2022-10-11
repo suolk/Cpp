@@ -1,4 +1,5 @@
 git add .
 git commit -m update
-git push -u origin masters
+git pull origin master
+git push -u origin master
 pause 
